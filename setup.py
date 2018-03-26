@@ -11,6 +11,11 @@ setup(
     packages=[
         'runwise_multiplicity',
     ],
+    package_data=[
+        'runwise_multiplicity':[
+            'tests/resources/*'
+        ]
+    ],
     install_requires=[
         'scipy',
         'numpy',
