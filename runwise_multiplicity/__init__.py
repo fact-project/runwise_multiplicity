@@ -106,17 +106,17 @@ def histogram(
     auxilluary,
     multiplicity,
     key='fCurrentsMedMean',
-    value_bining=np.linspace(0, 100, 100),
+    value_bin_edges=np.linspace(0, 100, 100),
 ):
     NUM_MULTIPLICITY_BINS = 100
 
-    num_value_bins = value_bining.shape[0]
+    num_value_bins = value_bin_edges.shape[0] - 1
     valid_runs = np.invert(np.isnan(auxilluary[key]))
 
     values = auxilluary[valid_runs][key]
     valid_multiplicities = multiplicity[valid_runs, :]
 
-    bin_idx = np.digitize(values, bins=value_bining)
+    bin_idx = np.digitize(values, bins=value_bin_edges)
 
     hist = np.zeros(shape=(NUM_MULTIPLICITY_BINS, num_value_bins))
     normalization = np.zeros(num_value_bins)
