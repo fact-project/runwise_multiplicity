@@ -111,20 +111,22 @@ def histogram(
     NUM_MULTIPLICITY_BINS = 100
 
     num_value_bins = value_bin_edges.shape[0] - 1
-    valid_runs = np.invert(np.isnan(auxilluary[key]))
+    not_nan = np.invert(np.isnan(auxilluary[key]))
+    not_inf = np.invert(np.isinf(auxilluary[key]))
+    valid_runs = not_nan & not_inf
 
     values = auxilluary[valid_runs][key]
     valid_multiplicities = multiplicity[valid_runs, :]
 
-    bin_idx = np.digitize(values, bins=value_bin_edges)
+    bin_edge_idx = np.digitize(values, bins=value_bin_edges)
 
     hist = np.zeros(shape=(NUM_MULTIPLICITY_BINS, num_value_bins))
     normalization = np.zeros(num_value_bins)
 
-    for i, b in enumerate(bin_idx):
-        if b < num_value_bins:
-            normalization[b] += 1
-            hist[:, b] += valid_multiplicities[i, :]
+    for i, b in enumerate(bin_edge_idx):
+        if b < len(value_bin_edges) and b > 0:
+            normalization[b - 1] += 1
+            hist[:, b - 1] += valid_multiplicities[i, :]
 
     for i in range(num_value_bins):
         hist[:, i] /= normalization[i]
