@@ -26,6 +26,10 @@ auxilluary = auxilluary[np.invert(above20)]
 night_sky_background_photon_multiplicity = night_sky_background_photon_multiplicity[np.invert(above20)]
 air_shower_photon_multiplicity = air_shower_photon_multiplicity[np.invert(above20)]
 
+mag_dark_night = 21
+delta_mag = mag_dark_night - auxilluary.fSqmMagMean
+auxilluary['fSqmFluxRatio'] = np.power(100, (delta_mag/5))
+
 color_sequence = ['xkcd:prussian blue','xkcd:pastel blue','xkcd:mahogany','xkcd:greyish','xkcd:bottle green']
 
 plot_settings = [
@@ -41,9 +45,9 @@ plot_settings = [
         'color': color_sequence,
         'name': 'Temperature'
     },
-    {   'value_bin_edges': np.linspace(18.75, 21.2, 6),
-        'value': 'fSqmMagMean',
-        'unit': '[]',
+    {   'value_bin_edges': np.linspace(0, 10, 6),
+        'value': 'fSqmFluxRatio',
+        'unit': '$F_{dark night}$',
         'color': color_sequence,
         'name': 'SQM'
     },
@@ -71,9 +75,9 @@ plot_settings = [
         'color': color_sequence,
         'name': 'Current'
     },
-    {   'value_bin_edges': np.linspace(0, 350, 6),
+    {   'value_bin_edges': np.linspace(0, 30, 6),
         'value': 'fTNGDust',
-        'unit': '(ugr/m3)',
+        'unit': '(ugr/m$^3$)',
         'color': color_sequence,
         'name': 'Dust Concen.'
     },
@@ -88,13 +92,13 @@ plot_settings = [
 for plot_setting in plot_settings:
     ps = plot_setting
 
-    h_asp, v = rwm.histogram(
+    h_asp, v_asp = rwm.histogram(
         auxilluary=auxilluary,
         multiplicity=air_shower_photon_multiplicity,
         key=ps['value'],
         value_bin_edges=ps['value_bin_edges'])
 
-    h_nsb, v = rwm.histogram(
+    h_nsb, v_nsb = rwm.histogram(
         auxilluary=auxilluary,
         multiplicity=night_sky_background_photon_multiplicity,
         key=ps['value'],
@@ -121,9 +125,9 @@ for plot_setting in plot_settings:
             np.linspace(1, 101, 100),
             h_asp[:, number],
             label=(
-                str(ps['value_bin_edges'][number]) +
+                str((ps['value_bin_edges'][number]).round(1)) +
                 ' to ' +
-                str(ps['value_bin_edges'][number + 1]) +
+                str((ps['value_bin_edges'][number + 1]).round(1)) +
                 ' ' +
                 ps['unit']
             ),
@@ -140,12 +144,14 @@ for plot_setting in plot_settings:
                 )
     plt.clf()
 
+    # for different denstiy plots
+    valid_runs = v_asp & v_nsb
     for i in range(len(ps['value_bin_edges']) - 1):
         start = ps['value_bin_edges'][i]
         stop = ps['value_bin_edges'][i+1]
         bins=np.linspace(start, stop, 20)
         plt.hist(
-            auxilluary[ps['value']],
+            auxilluary[ps['value']][valid_runs],
             bins=bins,
             range=(start, stop),
             color=ps['color'][i]
