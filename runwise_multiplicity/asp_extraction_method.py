@@ -17,7 +17,6 @@ plt.loglog(bining, only_asp_rates, color = 'b')
 plt.loglog(bining, r[0]['MultiplicityPhysicsTriggerRate'], color = 'xkcd:lime', linestyle = '--', linewidth = 2 )
 plt.xlabel('Multiplicity/1')
 plt.ylabel('Multiplicity$^2$ Rates(Multiplicity)/s$^{-1}$')
-plt.title('Extracting air shower rates')
 plt.savefig(
             'asp_extraction_method.png',
             dpi= 'figure',
