@@ -12,3 +12,6 @@ Atmospheric Cherenkov telescopes are a great tool for monitoring cosmic rays and
 
 Keywords: Multiplicity, air shower, night sky background, Cherenkov Light, single photons, gamma rays, cosmic rays.
 
+![img](asp_extraction_method.png)
+
+Figure: Subtracting the rates of multiplicities of the ‘pedestal’ trigger events (red) from the rates of multiplicities of the ‘physics’ trigger events (green) to obtain the rates of multiplicities of the air shower photons (blue).
