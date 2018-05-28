@@ -5,6 +5,8 @@ import pandas as pd
 import numpy as np
 import os
 import subprocess as sp
+import math
+import matplotlib.colors as colors
 
 run_info = pd.read_msgpack(
     'fact_run_info_table_20180319.msg')
@@ -30,77 +32,88 @@ mag_dark_night = 21
 delta_mag = mag_dark_night - auxilluary.fSqmMagMean
 auxilluary['fSqmFluxRatio'] = np.power(100, (delta_mag/5))
 
-color_sequence = ['xkcd:prussian blue','xkcd:pastel blue','xkcd:mahogany','xkcd:greyish','xkcd:bottle green']
+color_sequence = ['xkcd:peach','xkcd:navy','xkcd:grey green']
 
 plot_settings = [
-    {   'value_bin_edges': np.linspace(780, 797.5, 6),
+    {   'value_bin_edges': np.linspace(783, 793, 4),
         'value': 'fAirPressureMean',
         'unit': 'mbar',
         'color': color_sequence,
         'name': 'Air Pressure',
+        'selection': [786, 791]
     },
-    {   'value_bin_edges': np.linspace(0, 22, 6),
+    {   'value_bin_edges': np.linspace(6, 17, 4),
         'value': 'fOutsideTempMean',
         'unit': 'C',
         'color': color_sequence,
-        'name': 'Temperature'
+        'name': 'Temperature',
+        'selection': [6, 14]
     },
-    {   'value_bin_edges': np.linspace(0, 10, 6),
+    {   'value_bin_edges': np.linspace(1, 6, 4),
         'value': 'fSqmFluxRatio',
         'unit': '$F_{dark night}$',
         'color': color_sequence,
-        'name': 'SQM'
+        'name': 'SQM',
+        'selection': [1, 2]
     },
-    {   'value_bin_edges': np.linspace(0, 100, 6),
+    {   'value_bin_edges': np.linspace(15, 70, 4),
         'value': 'fHumidityMean',
         'unit': '%',
         'color': color_sequence,
-        'name': 'Humidity'
+        'name': 'Humidity',
+        'selection': [5, 30]
     },
-    {   'value_bin_edges': np.linspace(-48, 15, 6),
+    {   'value_bin_edges': np.linspace(-30, 0, 4),
         'value': 'fDewPointMean',
         'unit': 'C',
         'color': color_sequence,
-        'name': 'Dew Point'
+        'name': 'Dew Point',
+        'selection': [-13, 2]
     },
-    {   'value_bin_edges': np.linspace(15.91, 35, 6),
-        'value': 'fContainerTempMean',
-        'unit': 'C',
-        'color': color_sequence,
-        'name': 'Container Temp.'
-    },
-    {   'value_bin_edges': np.linspace(0, 75, 6),
-        'value': 'fCurrentsMedMean',
-        'unit': 'uA',
-        'color': color_sequence,
-        'name': 'Current'
-    },
-    {   'value_bin_edges': np.linspace(0, 30, 6),
+    {   'value_bin_edges': np.linspace(0, 10, 4),
         'value': 'fTNGDust',
         'unit': '(ugr/m$^3$)',
         'color': color_sequence,
-        'name': 'Dust Concen.'
+        'name': 'Dust Concen.',
+        'selection': [0, 5]
     },
-    {   'value_bin_edges': np.linspace(4.83, 75.58, 6),
+    {   'value_bin_edges': np.linspace(5, 50, 4),
         'value': 'fZenithDistanceMean',
         'unit': 'deg',
         'color': color_sequence,
-        'name': 'Zenith Distance'
+        'name': 'Zenith Distance',
+        'selection': [20, 30]
     },
 ]
+
+def make_selection_mask(plot_settings, value, auxilluary):
+    mask = np.ones(auxilluary.shape[0], dtype=np.bool)
+    for ps in plot_settings:
+        if ps['value'] != value:
+            above_lower_selection_mask = auxilluary[ps['value']] >= ps['selection'][0]
+            below_upper_selection_mask = auxilluary[ps['value']] < ps['selection'][1]
+            sub_mask = above_lower_selection_mask & below_upper_selection_mask
+            mask = mask & sub_mask
+            print(ps['value'], np.sum(sub_mask))
+    return mask
 
 for plot_setting in plot_settings:
     ps = plot_setting
 
+    selection_mask = make_selection_mask(
+        plot_settings=plot_settings,
+        value=ps['value'],
+        auxilluary=auxilluary)
+
     h_asp, v_asp = rwm.histogram(
-        auxilluary=auxilluary,
-        multiplicity=air_shower_photon_multiplicity,
+        auxilluary=auxilluary[selection_mask],
+        multiplicity=air_shower_photon_multiplicity[selection_mask],
         key=ps['value'],
         value_bin_edges=ps['value_bin_edges'])
 
     h_nsb, v_nsb = rwm.histogram(
-        auxilluary=auxilluary,
-        multiplicity=night_sky_background_photon_multiplicity,
+        auxilluary=auxilluary[selection_mask],
+        multiplicity=night_sky_background_photon_multiplicity[selection_mask],
         key=ps['value'],
         value_bin_edges=ps['value_bin_edges'])
 
@@ -121,9 +134,9 @@ for plot_setting in plot_settings:
 
     #for different log plots
     for number in range(h_asp.shape[1]):
-        plt.semilogx(
+        plt.loglog(
             np.linspace(1, 101, 100),
-            h_asp[:, number],
+            h_asp[:, number]*np.linspace(1, 101, 100)**2,
             label=(
                 str((ps['value_bin_edges'][number]).round(1)) +
                 ' to ' +
@@ -135,23 +148,23 @@ for plot_setting in plot_settings:
             )
     plt.legend()
     plt.xlabel('Multiplicity/1')
-    plt.ylabel('Rate/s')
+    plt.ylabel('Multiplicity$^2$ Rates(Multiplicity)/s$^{-1}$')
     plt.title(ps['name']+ '/'+ ps['unit'])
     plt.savefig(
-                os.path.join(ps['value'],'2DPlot_semilogx.png'),
+                os.path.join(ps['value'],'2DPlot_loglog.png'),
                 dpi= 'figure',
                 bbox_inches= 'tight'
                 )
     plt.clf()
 
-    # for different denstiy plots
+    # for different histograms corresponding to constant selected range
     valid_runs = v_asp & v_nsb
     for i in range(len(ps['value_bin_edges']) - 1):
         start = ps['value_bin_edges'][i]
         stop = ps['value_bin_edges'][i+1]
         bins=np.linspace(start, stop, 20)
         plt.hist(
-            auxilluary[ps['value']][valid_runs],
+            auxilluary[ps['value']][valid_runs & selection_mask],
             bins=bins,
             range=(start, stop),
             color=ps['color'][i]
