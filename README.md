@@ -1,11 +1,11 @@
-runwise_multiplicity
+*runwise_multiplicity*
 --------------------
 
-## Monitoring the properties of the atmosphere relevant for the observation of cosmic rays and cosmic gamma rays with atmospheric Cherenkov telescopes
+# Monitoring the properties of the atmosphere relevant for the observation of cosmic rays and cosmic gamma rays with atmospheric Cherenkov telescopes
 
-##### *Amandeep Singh*
+### *Amandeep Singh*
 
-##### *Supervised by Prof. Dr. Adrian Biland*
+### *Supervised by Prof. Dr. Adrian Biland*
 
 19th March, 2018
 
@@ -13,6 +13,6 @@ Atmospheric Cherenkov telescopes are a great tool for monitoring cosmic rays and
 
 Keywords: Multiplicity, air shower, night sky background, Cherenkov Light, single photons, gamma rays, cosmic rays.
 
-![img](asp_extraction_method.png)
+> ![img](asp_extraction_method.png)
 
 > Figure: Subtracting the rates of multiplicities of the ‘pedestal’ trigger events (red) from the rates of multiplicities of the ‘physics’ trigger events (green) to obtain the rates of multiplicities of the air shower photons (blue).
