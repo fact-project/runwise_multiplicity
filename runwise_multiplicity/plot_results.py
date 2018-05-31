@@ -18,15 +18,15 @@ overlap = rwm.run_wise_overlap(
     run_info=run_info,
     multiplicity_rates_of_air_shower_and_nsb_photons=rates)
 
-auxilluary = overlap['run_info']
-night_sky_background_photon_multiplicity = overlap['night_sky_background_photon_multiplicity']
-air_shower_photon_multiplicity = overlap['air_shower_photon_multiplicity']
+auxilluary_before_cut = overlap['run_info']
+night_sky_background_photon_multiplicity_before_cut = overlap['night_sky_background_photon_multiplicity']
+air_shower_photon_multiplicity_before_cut = overlap['air_shower_photon_multiplicity']
 
-above20 = night_sky_background_photon_multiplicity[:, 20:-1].sum(axis=1) > 0  # for cutting all the nsb values above 20, because we assume them to be fluctuations and junk
+above20 = night_sky_background_photon_multiplicity_before_cut[:, 20:-1].sum(axis=1) > 0  # for cutting all the nsb values above 20, because we assume them to be fluctuations and junk
 
-auxilluary = auxilluary[np.invert(above20)]
-night_sky_background_photon_multiplicity = night_sky_background_photon_multiplicity[np.invert(above20)]
-air_shower_photon_multiplicity = air_shower_photon_multiplicity[np.invert(above20)]
+auxilluary = auxilluary_before_cut[np.invert(above20)]
+night_sky_background_photon_multiplicity = night_sky_background_photon_multiplicity_before_cut[np.invert(above20)]
+air_shower_photon_multiplicity = air_shower_photon_multiplicity_before_cut[np.invert(above20)]
 
 mag_dark_night = 21
 delta_mag = mag_dark_night - auxilluary.fSqmMagMean
@@ -40,6 +40,7 @@ plot_settings = [
         'unit': 'mbar',
         'color': color_sequence,
         'name': 'Air Pressure',
+        'yrange': [2.7*(10**6), 5*(10**6)],
         'selection': [786, 791]
     },
     {   'value_bin_edges': np.linspace(6, 17, 4),
@@ -47,20 +48,23 @@ plot_settings = [
         'unit': 'C',
         'color': color_sequence,
         'name': 'Temperature',
+        'yrange': [3*(10**6), 5.5*(10**6)],
         'selection': [6, 14]
     },
-    {   'value_bin_edges': np.linspace(1, 6, 4),
+    {   'value_bin_edges': np.linspace(0.5, 6, 4),
         'value': 'fSqmFluxRatio',
         'unit': '$F_{dark night}$',
         'color': color_sequence,
         'name': 'SQM',
-        'selection': [1, 2]
+        'yrange': [3.5*(10**6), 2.5*(10**7)],
+        'selection': [0.9, 1.1]
     },
     {   'value_bin_edges': np.linspace(15, 70, 4),
         'value': 'fHumidityMean',
         'unit': '%',
         'color': color_sequence,
         'name': 'Humidity',
+        'yrange': [2.7*(10**6), 5*(10**6)],
         'selection': [5, 30]
     },
     {   'value_bin_edges': np.linspace(-30, 0, 4),
@@ -68,6 +72,7 @@ plot_settings = [
         'unit': 'C',
         'color': color_sequence,
         'name': 'Dew Point',
+        'yrange': [2.7*(10**6), 5.5*(10**6)],
         'selection': [-13, 2]
     },
     {   'value_bin_edges': np.linspace(0, 10, 4),
@@ -75,6 +80,7 @@ plot_settings = [
         'unit': '(ugr/m$^3$)',
         'color': color_sequence,
         'name': 'Dust Concen.',
+        'yrange': [2*(10**6), 5*(10**6)],
         'selection': [0, 5]
     },
     {   'value_bin_edges': np.linspace(5, 50, 4),
@@ -82,6 +88,7 @@ plot_settings = [
         'unit': 'deg',
         'color': color_sequence,
         'name': 'Zenith Distance',
+        'yrange': [2.5*(10**6), 5*(10**6)],
         'selection': [20, 30]
     },
 ]
@@ -133,10 +140,11 @@ for plot_setting in plot_settings:
     os.makedirs(ps['value'], exist_ok=True)
 
     #for different log plots
+    fig, ax = plt.subplots()
     for number in range(h_asp.shape[1]):
-        plt.loglog(
-            np.linspace(1, 101, 100),
-            h_asp[:, number]*np.linspace(1, 101, 100)**2,
+        ax.loglog(
+            np.linspace(11, 100, 90),
+            h_asp[10:100, number]*np.linspace(11, 100, 90)**2.7,
             label=(
                 str((ps['value_bin_edges'][number]).round(1)) +
                 ' to ' +
@@ -146,9 +154,11 @@ for plot_setting in plot_settings:
             ),
             color=ps['color'][number],
             )
+    #ax.set_ylim(ps['yrange'])
+    #ax.set_xlim(8, 100)
     plt.legend()
     plt.xlabel('Multiplicity/1')
-    plt.ylabel('Multiplicity$^2$ Rates(Multiplicity)/s$^{-1}$')
+    plt.ylabel('Multiplicity$^{2.7}$ Rates(Multiplicity)/s$^{-1}$')
     plt.title(ps['name']+ '/'+ ps['unit'])
     plt.savefig(
                 os.path.join(ps['value'],'2DPlot_loglog.png'),

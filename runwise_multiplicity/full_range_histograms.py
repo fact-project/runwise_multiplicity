@@ -36,37 +36,44 @@ plot_settings = [
     {   'value_bin_edges': np.linspace(780, 795, 4),
         'value': 'fAirPressureMean',
         'unit': 'mbar',
-        'name': 'Air Pressure'
+        'name': 'Air Pressure',
+        'selection': [786, 791]
     },
     {   'value_bin_edges': np.linspace(0, 25, 4),
         'value': 'fOutsideTempMean',
         'unit': 'C',
-        'name': 'Temperature'
+        'name': 'Temperature',
+        'selection': [6, 14]
     },
-    {   'value_bin_edges': np.linspace(1, 6, 4),
+    {   'value_bin_edges': np.linspace(0.5, 6, 4),
         'value': 'fSqmFluxRatio',
         'unit': '$F_{dark night}$',
-        'name': 'SQM'
+        'name': 'SQM',
+        'selection': [0.9, 1.1]
     },
     {   'value_bin_edges': np.linspace(5, 99, 4),
         'value': 'fHumidityMean',
         'unit': '%',
-        'name': 'Humidity'
+        'name': 'Humidity',
+        'selection': [5, 30]
     },
     {   'value_bin_edges': np.linspace(-45, 10, 4),
         'value': 'fDewPointMean',
         'unit': 'C',
-        'name': 'Dew Point'
+        'name': 'Dew Point',
+        'selection': [-13, 2]
     },
     {   'value_bin_edges': np.linspace(0, 15, 4),
         'value': 'fTNGDust',
         'unit': '(ugr/m$^3$)',
-        'name': 'Dust Concen.'
+        'name': 'Dust Concen.',
+        'selection': [0, 5]
     },
     {   'value_bin_edges': np.linspace(10, 70, 4),
         'value': 'fZenithDistanceMean',
         'unit': 'deg',
-        'name': 'Zenith Distance'
+        'name': 'Zenith Distance',
+        'selection': [20, 30]
     },
 ]
 
@@ -98,16 +105,18 @@ for ps in plot_settings:
     max_rate = np.max([max_asp_rate , max_nsb_rate])
 
     valid_runs = v_asp & v_nsb
+    fig, ax = plt.subplots()
     for i in range(len(ps['value_bin_edges']) - 1):
         start = ps['value_bin_edges'][i]
         stop = ps['value_bin_edges'][i+1]
         bins=np.linspace(start, stop, 20)
-        plt.hist(
+        hhh = ax.hist(
             auxilluary[ps['value']][valid_runs],
             bins=bins,
             range=(start, stop),
             color='xkcd:sea blue'
         )
+        ax.vlines(ps['selection'], 0, np.max(hhh[0]), colors='k', linestyle='dashed')
     plt.xlabel(ps['name']+ '/'+ ps['unit'])
     plt.ylabel('Number of runs')
     plt.title('# observations corresponding to different ' + ps['name'] + ' values')
